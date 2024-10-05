@@ -44,9 +44,9 @@ int main()
 
 ```
 问题：
-1.k--不是k++，发现如果是k++，则在每一次后移时，都需要一个哨兵
-2.把array[j] = sentry;放到了k的for循环中了，导致当k > 1时sentry把array[j+1]的值覆盖
-3sizeof(array)还以为直接就是数组的个数
+1. k--不是k++，发现如果是k++，则在每一次后移时，都需要一个哨兵
+2. 把array[j] = sentry;放到了k的for循环中了，导致当k > 1时sentry把array[j+1]的值覆盖
+3. sizeof(array)还以为直接就是数组的个数
 
 @Author:  王兴
 @Email:   243286054@qq.com
