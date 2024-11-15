@@ -14,7 +14,7 @@ def stu_init():
     with open('Students.json', 'r', encoding='utf-8') as f:
         for row in json.load(f):
             STU_LIST.append(row)
-
+            print(row)
 
 
 def get_choice() -> int:
