@@ -1,3 +1,5 @@
+import random
+
 # model params as below:
 # @brief 模型参数
 
@@ -26,3 +28,220 @@ d = [
     8.0, 10.0, 7.5, 15.0, 10.0, 7.5, 10.0, 10.0, 0, 8.0,
     0, 4.0, 6.0, 7.5, 9.0, 20.0, 10.0, 16.0, 8.0, 0
 ]
+lst_sum = []  #初始群体
+F_sum = []    #个体适应度
+P_sum = []    #选择概率
+#创建初始群体
+for i in range(20):
+    lst = random.sample(range(1, 10), 9)
+    lst_sum.append(lst)
+
+
+#传入一个列表作为参数
+def MinZ(lst):
+ #若最后一个值为9，则为空列表
+    z = 0
+    n = 0
+    l = 1
+
+    if len(lst) == 1:
+        z = 2 * d[lst[0] * 10]
+        return z
+
+    while l != len(lst)-1 and len(lst) != 0:
+        z += d[lst[n] * 10 + lst[l]]
+        n += 1
+        l += 1
+    if len(lst):
+        z += d[lst[l] * 10]
+    return z
+def Check(lst):
+    error = 0
+    if MinZ(lst) > D:
+        error += 1
+
+    Q_sum = 0
+    for i in range(len(lst)):
+        Q_sum += q[lst[i]-1]
+
+    if Q_sum > Q:
+        error += 1
+
+    return error
+#选择操作
+def choice():
+    lst_sum_new = []  # 储存 选择操作后的 新群体
+    for i in range(round(20 * P_sum[0])):
+        lst_sum_new.append(lst_sum[0])
+
+    #其他N-1个个体的选择
+    for i in range(1,len(lst_sum)):
+        if random.random() < 1 - P_sum[0]:
+            for j in range(round(20 * P_sum[i])):
+                lst_sum_new.append(lst_sum[i])
+                if len(lst_sum_new) == 20:
+                    return lst_sum_new
+
+
+    while len(lst_sum_new) <= 20:
+        for i in range(round((20 - len(lst_sum_new)) * P_sum[0])):
+            lst_sum_new.insert(0,lst_sum[0])
+        for i in range(1,len(lst_sum)):
+            if random.random() < 1 - P_sum[0]:
+                for j in range(round(20 * P_sum[i])):
+                    lst_sum_new.append(lst_sum[i])
+                    if len(lst_sum_new) == 20:
+                        return lst_sum_new
+
+    return lst_sum_new
+#交叉操作
+def cross():
+
+    lst_sum_new1 = lst_sum[:round(20 * P_sum[0])]
+
+    for i in lst_sum_new1:
+        print("lst_sum_new1:",i)
+    print('\n')
+
+     # 储存 交叉操作后的 新群体
+
+    lst_sum_slice = lst_sum[round(20 * P_sum[0]):]
+
+    remaining_indices = list(range(len(lst_sum_slice)))
+
+    for line in lst_sum_slice:
+        print("lst_sum_slice:",line)
+    print('\n')
+
+    for i in range( len(lst_sum_slice) //2):
+
+        if len(lst_sum_slice) < 2:
+            break
+
+        idx1,idx2 = random.sample(remaining_indices, 2)
+        subA,subB = lst_sum_slice[idx1],lst_sum_slice[idx2]
+
+        print("subA:",subA)
+        print("subB:",subB)
+
+
+        slice_subA = subA[0:4]
+        slice_subB = subB[0:4]
+        print("slice_subA:",slice_subA)
+        print("slice_subB:",slice_subB)
+
+
+        for i in slice_subB:
+            subA.pop(subA.index(i))
+        subA = slice_subB + subA
+        print("new subA:",subA)
+        lst_sum_new1.append(subA)
+
+
+
+        for i in slice_subA:
+            subB.pop(subB.index(i))
+        subB = slice_subA + subB
+        print("new subB:",subB)
+        lst_sum_new1.append(subB)
+
+
+        remaining_indices.remove(idx1)
+        remaining_indices.remove(idx2)
+
+        print('\n')
+
+    lst_sum_new1.extend(lst_sum_slice[i] for i in remaining_indices)
+
+
+    return lst_sum_new1
+
+#变异操作
+def vary():
+
+    selected_indexs = []          #存储被选中的数字的index
+
+    selected_items = random.sample(lst_sum, 5)
+    for i in selected_items:
+        selected_indexs.append(selected_items.index(i))
+
+    random.shuffle(selected_items) #打乱顺序
+
+    for index,item in zip(selected_indexs,selected_items):
+        lst_sum[index] = item
+
+    return lst_sum
+#计算个体适应度
+def CalcF():
+    for lst in lst_sum:
+        index = lst.index(9)
+        sub1 = lst[:index]
+        sub2 = lst[index + 1:]
+
+        Z = 0
+        M = 0
+        for sub in [sub1,sub2]:
+            Z += MinZ(sub)
+            M += Check(sub)
+
+        F = 1.0 / (Z + 100 * M)
+        F_sum.append(F)
+#计算选择概率
+def CalcP():
+    sum = 0  #F_sum 列表的所有加和
+    for i in range(20):
+        sum += F_sum[i]
+    for i in range(20):
+        P_sum.append(F_sum[i] * 1.0 / sum)
+#为F、P、个体排序
+def sortout():
+    for i in range(20):
+        for n in range(19,0,-1):
+            if F_sum[n] > F_sum[n-1]:
+                temp_F = F_sum[n]
+                F_sum[n] = F_sum[n-1]
+                F_sum[n-1] = temp_F
+
+                temp_lst = lst_sum[n]
+                lst_sum[n] = lst_sum[n-1]
+                lst_sum[n-1] = temp_lst
+
+                temp_P = P_sum[n]
+                P_sum[n] = P_sum[n-1]
+                P_sum[n-1] = temp_P
+#初始化
+def init():
+    CalcF()
+    CalcP()
+    sortout()
+
+
+if __name__ == '__main__':
+    for i in range(50):
+        #初始化F、P
+        F_sum = []
+        P_sum = []
+        init()
+        """调试代码"""
+        for i in range(20):
+            print(lst_sum[i],F_sum[i],P_sum[i])
+        print('\n')
+
+        lst_sum = choice()
+        F_sum = []
+        P_sum = []
+        init()
+        
+        """调试代码"""
+        print("After choice:")
+        for i in range(20):
+            print(lst_sum[i],F_sum[i],P_sum[i])
+        print('\n')
+
+        if random.random() <= 0.95:
+            lst_sum = cross()
+            F_sum = []
+            P_sum = []
+            init()
+        if random.random() <= 0.05:
+            lst_sum = vary()
