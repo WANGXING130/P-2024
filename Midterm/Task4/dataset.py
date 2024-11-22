@@ -36,7 +36,6 @@ for i in range(20):
     lst = random.sample(range(1, 10), 9)
     lst_sum.append(lst)
 
-
 #传入一个列表作为参数
 def MinZ(lst):
  #若最后一个值为9，则为空列表
@@ -99,19 +98,9 @@ def cross():
 
     lst_sum_new1 = lst_sum[:round(20 * P_sum[0])]
 
-    for i in lst_sum_new1:
-        print("lst_sum_new1:",i)
-    print('\n')
-
-     # 储存 交叉操作后的 新群体
-
     lst_sum_slice = lst_sum[round(20 * P_sum[0]):]
 
     remaining_indices = list(range(len(lst_sum_slice)))
-
-    for line in lst_sum_slice:
-        print("lst_sum_slice:",line)
-    print('\n')
 
     for i in range( len(lst_sum_slice) //2):
 
@@ -121,38 +110,19 @@ def cross():
         idx1,idx2 = random.sample(remaining_indices, 2)
         subA,subB = lst_sum_slice[idx1],lst_sum_slice[idx2]
 
-        print("subA:",subA)
-        print("subB:",subB)
+        slice_subA = subA[:4]
+        slice_subB = subB[:4]
 
+        new_subA = slice_subB + [item for item in subA if item not in slice_subB]
+        lst_sum_new1.append(new_subA)
 
-        slice_subA = subA[0:4]
-        slice_subB = subB[0:4]
-        print("slice_subA:",slice_subA)
-        print("slice_subB:",slice_subB)
-
-
-        for i in slice_subB:
-            subA.pop(subA.index(i))
-        subA = slice_subB + subA
-        print("new subA:",subA)
-        lst_sum_new1.append(subA)
-
-
-
-        for i in slice_subA:
-            subB.pop(subB.index(i))
-        subB = slice_subA + subB
-        print("new subB:",subB)
-        lst_sum_new1.append(subB)
-
+        new_subB = slice_subA + [item for item in subB if item not in slice_subA]
+        lst_sum_new1.append(new_subB)
 
         remaining_indices.remove(idx1)
         remaining_indices.remove(idx2)
 
-        print('\n')
-
     lst_sum_new1.extend(lst_sum_slice[i] for i in remaining_indices)
-
 
     return lst_sum_new1
 
@@ -222,21 +192,13 @@ if __name__ == '__main__':
         F_sum = []
         P_sum = []
         init()
-        """调试代码"""
-        for i in range(20):
-            print(lst_sum[i],F_sum[i],P_sum[i])
-        print('\n')
+
 
         lst_sum = choice()
         F_sum = []
         P_sum = []
         init()
-        
-        """调试代码"""
-        print("After choice:")
-        for i in range(20):
-            print(lst_sum[i],F_sum[i],P_sum[i])
-        print('\n')
+
 
         if random.random() <= 0.95:
             lst_sum = cross()
@@ -245,3 +207,8 @@ if __name__ == '__main__':
             init()
         if random.random() <= 0.05:
             lst_sum = vary()
+            F_sum = []
+            P_sum = []
+            init()
+
+    print(MinZ(lst_sum[0]))
