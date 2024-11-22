@@ -6,7 +6,7 @@ import random
 # @param K 汽车数量
 K = 2              # 按照论文参考文献[3]中的数据来，有2辆车
 # @param Q_k 单汽车载重量上限
-Q = 8000           # 单位为kg，因为数据都相同，则做成一个数值
+Q = 8           # 单位为吨，因为数据都相同，则做成一个数值
 # @param D_k 单汽车单次行驶距离上限 *原文为h，疑似写错*
 D = 40             # 单位为km，因为数据都相同，则做成一个数值
 
@@ -14,6 +14,8 @@ D = 40             # 单位为km，因为数据都相同，则做成一个数值
 L = 8              # 按照论文参考文献[3]中的数据来，有8物资点
 # @param q_i 每个物资点需求数量
 q = [1, 2, 1, 2, 1, 4, 2, 2]
+
+
 # @param d_ij 物资点i和物资点j的距离
 # @param d_0j 汽车出发地到物资点j的距离 *即出发地下标设为0*
 d = [
@@ -28,9 +30,11 @@ d = [
     8.0, 10.0, 7.5, 15.0, 10.0, 7.5, 10.0, 10.0, 0, 8.0,
     0, 4.0, 6.0, 7.5, 9.0, 20.0, 10.0, 16.0, 8.0, 0
 ]
+
 lst_sum = []  #初始群体
 F_sum = []    #个体适应度
-P_sum = []    #选择概率
+P_sum = []    #单个概率
+P_Cumu_sum = []  #累计概率
 #创建初始群体
 for i in range(20):
     lst = random.sample(range(1, 10), 9)
@@ -70,35 +74,24 @@ def Check(lst):
 #选择操作
 def choice():
     lst_sum_new = []  # 储存 选择操作后的 新群体
-    for i in range(round(20 * P_sum[0])):
-        lst_sum_new.append(lst_sum[0])
+
+    lst_sum_new.append(lst_sum[0])
 
     #其他N-1个个体的选择
-    for i in range(1,len(lst_sum)):
-        if random.random() < 1 - P_sum[0]:
-            for j in range(round(20 * P_sum[i])):
-                lst_sum_new.append(lst_sum[i])
-                if len(lst_sum_new) == 20:
-                    return lst_sum_new
-
-
     while len(lst_sum_new) <= 20:
-        for i in range(round((20 - len(lst_sum_new)) * P_sum[0])):
-            lst_sum_new.insert(0,lst_sum[0])
         for i in range(1,len(lst_sum)):
-            if random.random() < 1 - P_sum[0]:
-                for j in range(round(20 * P_sum[i])):
+            if random.random() <= P_Cumu_sum[i]:
+                for j in range(round(20 * P_Cumu_sum[i])):
                     lst_sum_new.append(lst_sum[i])
                     if len(lst_sum_new) == 20:
                         return lst_sum_new
-
     return lst_sum_new
 #交叉操作
 def cross():
 
-    lst_sum_new1 = lst_sum[:round(20 * P_sum[0])]
+    lst_sum_new1 = lst_sum[:1]
 
-    lst_sum_slice = lst_sum[round(20 * P_sum[0]):]
+    lst_sum_slice = lst_sum[1:]
 
     remaining_indices = list(range(len(lst_sum_slice)))
 
@@ -127,20 +120,19 @@ def cross():
     return lst_sum_new1
 
 #变异操作
-def vary():
+def vary(lst):
 
     selected_indexs = []          #存储被选中的数字的index
 
-    selected_items = random.sample(lst_sum, 5)
+    selected_items = random.sample(lst, 5)
     for i in selected_items:
-        selected_indexs.append(selected_items.index(i))
+        selected_indexs.append(lst.index(i))
 
     random.shuffle(selected_items) #打乱顺序
 
     for index,item in zip(selected_indexs,selected_items):
-        lst_sum[index] = item
+        lst[index] = item
 
-    return lst_sum
 #计算个体适应度
 def CalcF():
     for lst in lst_sum:
@@ -163,6 +155,18 @@ def CalcP():
         sum += F_sum[i]
     for i in range(20):
         P_sum.append(F_sum[i] * 1.0 / sum)
+
+
+def CumuP():
+    P = 0
+    for i in range(19,0,-1):
+        for j in range(19,i-1,-1):
+            P += P_sum[j]
+        P_Cumu_sum.append(P)
+    P_Cumu_sum.reverse()
+
+
+
 #为F、P、个体排序
 def sortout():
     for i in range(20):
@@ -184,6 +188,7 @@ def init():
     CalcF()
     CalcP()
     sortout()
+    CumuP()
 
 
 if __name__ == '__main__':
@@ -191,24 +196,39 @@ if __name__ == '__main__':
         #初始化F、P
         F_sum = []
         P_sum = []
+        P_Cumu_sum = []
         init()
+        for i in range(20):
+            print(lst_sum[i],F_sum[i],P_sum[i])
+        print('\n')
 
 
         lst_sum = choice()
         F_sum = []
         P_sum = []
+        P_Cumu_sum = []
         init()
 
 
         if random.random() <= 0.95:
+            print('交叉')
             lst_sum = cross()
             F_sum = []
             P_sum = []
-            init()
-        if random.random() <= 0.05:
-            lst_sum = vary()
-            F_sum = []
-            P_sum = []
+            P_Cumu_sum = []
             init()
 
+        print('变异')
+        for lst in lst_sum:
+            if random.random() <= 0.05:
+                vary(lst)
+
+            F_sum = []
+            P_sum = []
+            P_Cumu_sum = []
+            init()
+
+    print('\n')
+    for i in lst_sum:
+        print(i)
     print(MinZ(lst_sum[0]))
