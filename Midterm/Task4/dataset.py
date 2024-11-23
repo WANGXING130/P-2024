@@ -35,6 +35,7 @@ lst_sum = []  #初始群体
 F_sum = []    #个体适应度
 P_sum = []    #单个概率
 P_Cumu_sum = []  #累计概率
+
 #创建初始群体
 for i in range(20):
     lst = random.sample(range(1, 10), 9)
@@ -42,21 +43,16 @@ for i in range(20):
 
 #传入一个列表作为参数
 def MinZ(lst):
- #若最后一个值为9，则为空列表
+#若最后一个值为9，则为空列表
     z = 0
     n = 0
-    l = 1
 
-    if len(lst) == 1:
-        z = 2 * d[lst[0] * 10]
-        return z
-
-    while l != len(lst)-1 and len(lst) != 0:
-        z += d[lst[n] * 10 + lst[l]]
+    if len(lst) == 0:
+     return z
+    while n < len(lst) - 1:
+        z += d[lst[n] * 10 + lst[n + 1]]
         n += 1
-        l += 1
-    if len(lst):
-        z += d[lst[l] * 10]
+    z = z + d[lst[0]] + d[lst[len(lst) - 1]]
     return z
 def Check(lst):
     error = 0
@@ -124,7 +120,7 @@ def vary(lst):
 
     selected_indexs = []          #存储被选中的数字的index
 
-    selected_items = random.sample(lst, 5)
+    selected_items = random.sample(lst, 3)
     for i in selected_items:
         selected_indexs.append(lst.index(i))
 
@@ -192,12 +188,13 @@ def init():
 
 
 if __name__ == '__main__':
-    for i in range(50):
+    for i in range(500):
         #初始化F、P
         F_sum = []
         P_sum = []
         P_Cumu_sum = []
         init()
+
         for i in range(20):
             print(lst_sum[i],F_sum[i],P_sum[i])
         print('\n')
@@ -218,9 +215,10 @@ if __name__ == '__main__':
             P_Cumu_sum = []
             init()
 
-        print('变异')
+
         for lst in lst_sum:
             if random.random() <= 0.05:
+                print('变异')
                 vary(lst)
 
             F_sum = []
@@ -231,4 +229,16 @@ if __name__ == '__main__':
     print('\n')
     for i in lst_sum:
         print(i)
-    print(MinZ(lst_sum[0]))
+
+
+    print('\n')
+    index = lst_sum[0].index(9)
+    sub1 = lst_sum[0][:index]
+    sub2 = lst_sum[0][index + 1:]
+    print(sub1,sub2)
+
+    Z = 0
+    for sub in [sub1,sub2]:
+        Z += MinZ(sub)
+        print(Z)
+    print(Z)
